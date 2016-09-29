@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">萌妹图</string>
+    <string name="navigation_drawer_open">Open Drawer</string>
+    <string name="navigation_drawer_close">Close Drawer</string>
+    <string name="image_loaded_error">图片加载失败啦~</string>
+    <string name="save_image">保存</string>
+    <string name="user_exit_app_tip">再次点击退出萌妹图</string>
+</resources>
