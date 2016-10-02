@@ -2,6 +2,7 @@ package com.evilbeast.meizi.utils;
 
 import android.util.Log;
 
+import com.evilbeast.meizi.entity.fuli.FuliItemObject;
 import com.evilbeast.meizi.entity.meizi.MeiZi;
 import com.evilbeast.meizi.entity.meizi.MeiZiGroup;
 
@@ -119,5 +120,41 @@ public class MeiZiUtil {
             results.add(data);
         }
         return results;
+    }
+
+    public List<FuliItemObject> parseFuliItems(String html) {
+        List<FuliItemObject> results = new ArrayList<>();
+        Document doc = Jsoup.parse(html);
+        Elements aTags = doc.select("div.movie-item > a");
+        LogUtil.all(aTags.size()+"#");
+        for (int i = 0; i < aTags.size(); i++) {
+            Element aTag = aTags.get(i);
+            String title = aTag.attr("title");
+
+            String href = aTag.attr("href");
+            int groupId = Integer.parseInt(href.substring(href.lastIndexOf("/")+1, href.lastIndexOf(".")));
+            String imageUrl = aTag.select("img").first().attr("src");
+
+            FuliItemObject item = new FuliItemObject();
+            item.setImageUrl(imageUrl);
+            item.setGroupId(groupId);
+            item.setTitle(title);
+
+            results.add(item);
+        }
+
+
+        LogUtil.all(results.toString());
+        return results;
+    }
+
+    public void putFuliItemCache(final List<FuliItemObject> list) {
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.copyToRealm(list);
+            }
+        });
     }
 }

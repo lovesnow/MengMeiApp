@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.evilbeast.meizi.R;
@@ -68,6 +69,9 @@ public class MeiziDetailActivity extends RxBaseActivity {
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
 
+    @BindView(R.id.toolbar_title)
+    TextView mTitlebar;
+
     @BindView(R.id.view_pager)
     ViewPager mViewPager;
 
@@ -107,6 +111,7 @@ public class MeiziDetailActivity extends RxBaseActivity {
             @Override
             public void onPageSelected(int position) {
                 currentImageUrl = mDataList.get(position).getImageUrl();
+                mTitlebar.setText(position+1+"/"+mDataList.size());
             }
 
             @Override
@@ -141,7 +146,8 @@ public class MeiziDetailActivity extends RxBaseActivity {
 
     @Override
     public void initToolbar() {
-        mToolbar.setTitle(groupTitle);
+        mToolbar.setTitle("");
+        mTitlebar.setText("1/"+mDataList.size());
         mToolbar.setBackgroundResource(R.color.black_90);
         mAppbarLayout.setBackgroundResource(R.color.black_90);
         mAppbarLayout.setAlpha(0.5f);

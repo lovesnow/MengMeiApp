@@ -50,6 +50,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
     private int pageNum = 24;
     private Realm realm;
     private int PRELOAD_SIZE = 6;
+    private boolean hasLoadMore = true;
 
 
     @Override
@@ -94,7 +95,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         mAdapter = new MeiZiAdapter(mRecyclerView, mDataList);
         mRecyclerView.setAdapter(mAdapter);
 
-        setRecycleScrollBug();
+        //setRecycleScrollBug();
     }
 
     private void initSwipeRefresh() {
@@ -102,9 +103,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                page = 1;
-                clearCache();
-                fetchAndSaveData();
+                pull_refresh_data();
             }
         });
 
@@ -112,12 +111,21 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         mSwipeRefreshLayout.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mSwipeRefreshLayout.setRefreshing(true);
-                page = 1;
-                clearCache();
-                fetchAndSaveData();
+                pull_refresh_data();
             }
         }, 500);
+    }
+
+    private void pull_refresh_data() {
+        mSwipeRefreshLayout.setRefreshing(true);
+        page = 1;
+        if (cateType.equals("best")) {
+            hasLoadMore = false;
+        } else {
+            hasLoadMore = true;
+        }
+        clearCache();
+        fetchAndSaveData();
     }
 
     private void fetchGroupDataAndOpen(final int groupId, final String groupTitle)  {
@@ -158,9 +166,16 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
                         try {
                             String html = responseBody.string();
                             List<MeiZi> list = MeiZiUtil.getInstance().parserMeiziTuHtml(html, cateType);
-                            MeiZiUtil.getInstance().putMeiZiCache(list);
-                            finishTask();
-
+                            if (list.size() > 0) {
+                                MeiZiUtil.getInstance().putMeiZiCache(list);
+                                finishTask();
+                            } else {
+                                hasLoadMore = false;
+                                // 关闭刷新指示器
+                                if (mSwipeRefreshLayout.isRefreshing()) {
+                                    mSwipeRefreshLayout.setRefreshing(false);
+                                }
+                            }
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -199,9 +214,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         mAdapter.setOnItemClickListener(new AbstractAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position, AbstractAdapter.ClickableViewHolder holder) {
-                if (!mSwipeRefreshLayout.isRefreshing()) {
-                    fetchGroupDataAndOpen(mDataList.get(position).getGroupid(), mDataList.get(position).getTitle());
-                }
+                fetchGroupDataAndOpen(mDataList.get(position).getGroupid(), mDataList.get(position).getTitle());
             }
         });
     }
@@ -222,7 +235,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 boolean isBottom = mLayoutManager.findLastCompletelyVisibleItemPositions(new int[2])[1] >= mAdapter.getItemCount() - PRELOAD_SIZE;
-                if (!mSwipeRefreshLayout.isRefreshing() && isBottom) {
+                if (!mSwipeRefreshLayout.isRefreshing() && isBottom && hasLoadMore) {
                     mSwipeRefreshLayout.setRefreshing(true);
                     page++;
                     fetchAndSaveData();

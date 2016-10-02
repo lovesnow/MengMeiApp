@@ -23,11 +23,12 @@ public class MeiZiApp extends Application {
     }
 
     public void initRealm() {
-        Realm.init(this);
+        //Realm.init(this);
         RealmConfiguration realmConfig = new RealmConfiguration
-                .Builder()
+                .Builder(this)
+                .name("meiziapp")
                 .deleteRealmIfMigrationNeeded()
-                .schemaVersion(7)
+                .schemaVersion(8)
                 .build();
         Realm.setDefaultConfiguration(realmConfig);
     }

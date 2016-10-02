@@ -1,4 +1,4 @@
-package com.evilbeast.meizi;
+package com.evilbeast.meizi.module.activity;
 
 
 import android.os.Bundle;
@@ -11,9 +11,11 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 
+import com.evilbeast.meizi.R;
 import com.evilbeast.meizi.base.RxBaseActivity;
 import com.evilbeast.meizi.module.meizi.MeiZiPageFragment;
 import com.evilbeast.meizi.module.meizi.MeiZiSimpleFragment;
+import com.evilbeast.meizi.module.zxfuli.FuliPageFragment;
 import com.evilbeast.meizi.utils.SnackbarUtil;
 
 import butterknife.BindView;
@@ -43,7 +45,8 @@ public class MainActivity extends RxBaseActivity {
 
     @Override
     public void initViews(Bundle savedInstanceState) {
-        MeiZiPageFragment fragment = MeiZiPageFragment.newInstance();
+       // MeiZiPageFragment fragment = MeiZiPageFragment.newInstance();
+        FuliPageFragment fragment = FuliPageFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.content,fragment).commit();
 
     }
