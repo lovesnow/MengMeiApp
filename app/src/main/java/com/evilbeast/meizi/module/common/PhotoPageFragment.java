@@ -37,8 +37,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  */
 public class PhotoPageFragment extends RxBaseFragment implements RequestListener<String, GlideDrawable> {
 
-    private static final String EXTRA_URL = "extra_url";
-    private static final String EXTRA_DATA = "extra_data";
+    private static final String EXTRA_DATA_ID = "extra_data_id";
 
     private String image_url;
     private PhotoObject mData;
@@ -64,23 +63,14 @@ public class PhotoPageFragment extends RxBaseFragment implements RequestListener
     @Override
     public void initViews() {
         mRealm = Realm.getDefaultInstance();
-        image_url = getArguments().getString(EXTRA_URL);
-        mData = (PhotoObject) getArguments().getSerializable(EXTRA_DATA);
+        int id = getArguments().getInt(EXTRA_DATA_ID);
+        mData = mRealm.where(PhotoObject.class).equalTo("id", id).findFirst();
 
-        boolean isEmptyExtraUrl = false;
-        if (image_url == null) {
-            isEmptyExtraUrl = true;
-        } else {
-            if (image_url.isEmpty()) {
-                isEmptyExtraUrl = true;
-            }
+
+        if (mData != null && !mData.isEmpty())  {
+            image_url = mData.getImageUrl();
         }
 
-        if (isEmptyExtraUrl) {
-            if (mData != null && !mData.isEmpty())  {
-                image_url = mData.getImageUrl();
-            }
-        }
         if (image_url != null && !image_url.isEmpty()) {
             LogUtil.w("image："+ image_url);
             glideLoadImageUrl(image_url);
@@ -221,21 +211,13 @@ public class PhotoPageFragment extends RxBaseFragment implements RequestListener
 
     @Override
     public void onDestroy() {
-        mRealm.close();
         super.onDestroy();
+        mRealm.close();
     }
 
-    public static PhotoPageFragment newInstance(String url) {
+    public static PhotoPageFragment newInstance(int id) {
         Bundle bundle = new Bundle();
-        bundle.putString(EXTRA_URL, url);
-        PhotoPageFragment fragment = new PhotoPageFragment();
-        fragment.setArguments(bundle);
-        return fragment;
-    }
-
-    public static PhotoPageFragment newInstance(PhotoObject data)  {
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(EXTRA_DATA, data);
+        bundle.putInt(EXTRA_DATA_ID, id);
         PhotoPageFragment fragment = new PhotoPageFragment();
         fragment.setArguments(bundle);
         return fragment;

@@ -145,8 +145,8 @@ public class PhotoViewActivity extends RxBaseActivity {
 
     @Override
     protected void onDestroy() {
-        realm.close();
         super.onDestroy();
+        realm.close();
     }
 
     @Override
@@ -242,7 +242,7 @@ public class PhotoViewActivity extends RxBaseActivity {
         @Override
         public Fragment getItem(int position) {
             PhotoObject data = mDataList.get(position);
-            return PhotoPageFragment.newInstance(data);
+            return PhotoPageFragment.newInstance(data.getId());
 
         }
 

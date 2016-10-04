@@ -3,6 +3,8 @@ package com.evilbeast.meizi;
 import android.app.Application;
 import android.content.Context;
 
+import com.evilbeast.meizi.utils.LogUtil;
+
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
@@ -26,7 +28,7 @@ public class MeiZiApp extends Application {
         //Realm.init(this);
         RealmConfiguration realmConfig = new RealmConfiguration
                 .Builder(this)
-                .name("meiziappv7")
+                .name("meiziappv9")
                 .deleteRealmIfMigrationNeeded()
                 .schemaVersion(9)
                 .build();

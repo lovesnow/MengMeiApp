@@ -1,5 +1,7 @@
 package com.evilbeast.meizi.entity.photo;
 
+import com.evilbeast.meizi.utils.RealmAutoIncrement;
+
 import java.io.Serializable;
 
 import io.realm.RealmObject;
@@ -9,10 +11,19 @@ import io.realm.annotations.PrimaryKey;
  * Author: sumary
  */
 public class PhotoObject extends RealmObject implements Serializable {
+
+
+    @PrimaryKey
+    private int id = RealmAutoIncrement.getInstance(this.getClass()).getNextIdFromModel();
+
     private String imageUrl;
     private int groupId;
     private String module;
     private int position;
+
+    public int getId() {
+        return id;
+    }
 
     public int getPosition() {
         return position;
