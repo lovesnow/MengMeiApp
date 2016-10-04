@@ -1,10 +1,7 @@
 package com.evilbeast.meizi.utils;
 
-import android.util.Log;
-
-import com.evilbeast.meizi.entity.fuli.FuliItemObject;
-import com.evilbeast.meizi.entity.meizi.MeiZi;
-import com.evilbeast.meizi.entity.meizi.MeiZiGroup;
+import com.evilbeast.meizi.entity.photo.PhotoGroupObject;
+import com.evilbeast.meizi.entity.photo.PhotoObject;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -42,10 +39,10 @@ public class MeiZiUtil {
      * @param type
      * @return
      */
-    public List<MeiZi> parserMeiziTuHtml(String html, String type)
+    public List<PhotoGroupObject> parserMeiziTuHtml(String html, String type, String module)
     {
 
-        List<MeiZi> list = new ArrayList<>();
+        List<PhotoGroupObject> list = new ArrayList<>();
         Document doc = Jsoup.parse(html);
         Elements links = doc.select("li");
 
@@ -55,16 +52,14 @@ public class MeiZiUtil {
         {
             imgelement = links.get(i).select("img").first();
             aelement = links.get(i).select("a").first();
-            MeiZi bean = new MeiZi();
-            bean.setOrder(i);
-
+            String url = aelement.attr("href");
+            PhotoGroupObject bean = new PhotoGroupObject();
+            bean.setPosition(i);
             bean.setTitle(imgelement.attr("alt").toString());
             bean.setType(type);
-            bean.setHeight(354);
-            bean.setWidth(236);
-            bean.setImageurl(imgelement.attr("data-original"));
-            bean.setUrl(aelement.attr("href"));
-            bean.setGroupid(url2groupid(bean.getUrl()));
+            bean.setImageUrl(imgelement.attr("data-original"));
+            bean.setGroupId(url2groupid(url));
+            bean.setModule(module);
             list.add(bean);
         }
         return list;
@@ -82,7 +77,7 @@ public class MeiZiUtil {
         return Integer.parseInt(url.split("/")[3]);
     }
 
-    public void putMeiZiCache(List<MeiZi> list) {
+    public void putMeiZiCache(List<PhotoGroupObject> list) {
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
         realm.copyToRealm(list);
@@ -90,7 +85,7 @@ public class MeiZiUtil {
         realm.close();
     }
 
-    public void putGroupCache(List<MeiZiGroup> list) {
+    public void putGroupCache(List<PhotoObject> list) {
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
         realm.copyToRealmOrUpdate(list);
@@ -98,32 +93,54 @@ public class MeiZiUtil {
         realm.close();
     }
 
-    public List<MeiZiGroup> parseMeiZiGroupSave(String html, int groupId) {
-        List<MeiZiGroup> results = new ArrayList<>();
+    public List<PhotoObject> parseMeiZiGroupSave(String html, int groupId, String module) {
+        List<PhotoObject> results = new ArrayList<>();
         String keyNum;
         String imageUrl;
+        String keyPrefix;
+        String keyExt;
+
         Document doc = Jsoup.parse(html);
         String url = doc.select("div.main-image img").first().attr("src");
-        int total_page = Integer.parseInt(doc.select("div.pagenavi span.dots ~ a span").first().text());
+        Elements spanElements = doc.select("div.pagenavi a span");
+        int total_page = Integer.parseInt(spanElements.get(spanElements.size()-2).text());
+        LogUtil.all(total_page+"");
         String urlPrefix = url.substring(0, url.lastIndexOf("/"));
         String pathName = url.substring(url.lastIndexOf("/")+1);
-        String keyPrefix = pathName.split("01")[0];
-        String keyExt = pathName.split("01")[1];
+        if (pathName.lastIndexOf("01.") != -1) {
+            keyPrefix = pathName.substring(0, pathName.lastIndexOf("01."));
+            keyExt = pathName.substring(pathName.lastIndexOf("."));
+        } else {
+            keyPrefix = null;
+            keyExt = null;
+        }
+
 
         for (int i = 1; i <= total_page; i++) {
-            keyNum = String.format("%2d", i).replace(' ', '0');
-            imageUrl = String.format("%s/%s%s%s", urlPrefix, keyPrefix, keyNum, keyExt);
+            if (keyPrefix != null) {
+                keyNum = String.format("%2d", i).replace(' ', '0');
+                imageUrl = String.format("%s/%s%s%s", urlPrefix, keyPrefix, keyNum, keyExt);
+            } else {
+                imageUrl = "";
+            }
 
-            MeiZiGroup data = new MeiZiGroup();
+            PhotoObject data = new PhotoObject();
             data.setGroupId(groupId);
+            data.setModule(module);
             data.setImageUrl(imageUrl);
+            data.setPosition(i);
             results.add(data);
         }
         return results;
     }
 
-    public List<FuliItemObject> parseFuliItems(String html) {
-        List<FuliItemObject> results = new ArrayList<>();
+    public String parseMeiziImageUrl(String html) {
+        Document doc = Jsoup.parse(html);
+        return doc.select("div.main-image img").first().attr("src");
+    }
+
+    public List<PhotoGroupObject> parseFuliItems(String html, String module) {
+        List<PhotoGroupObject> results = new ArrayList<>();
         Document doc = Jsoup.parse(html);
         Elements aTags = doc.select("div.movie-item > a");
         LogUtil.all(aTags.size()+"#");
@@ -135,10 +152,11 @@ public class MeiZiUtil {
             int groupId = Integer.parseInt(href.substring(href.lastIndexOf("/")+1, href.lastIndexOf(".")));
             String imageUrl = aTag.select("img").first().attr("src");
 
-            FuliItemObject item = new FuliItemObject();
+            PhotoGroupObject item = new PhotoGroupObject();
             item.setImageUrl(imageUrl);
             item.setGroupId(groupId);
             item.setTitle(title);
+            item.setModule(module);
 
             results.add(item);
         }
@@ -148,7 +166,7 @@ public class MeiZiUtil {
         return results;
     }
 
-    public void putFuliItemCache(final List<FuliItemObject> list) {
+    public void putFuliItemCache(final List<PhotoGroupObject> list) {
         Realm realm = Realm.getDefaultInstance();
         realm.executeTransaction(new Realm.Transaction() {
             @Override
@@ -156,5 +174,32 @@ public class MeiZiUtil {
                 realm.copyToRealm(list);
             }
         });
+    }
+
+    public List<PhotoObject> parseFuliGroupHtml(String html,int groupId, String module) {
+        List<PhotoObject> results = new ArrayList<>();
+        Document doc = Jsoup.parse(html);
+        String href = doc.select("ul.dslist-group li a").last().attr("href");
+        String src = doc.select("div.playpic img").first().attr("src");
+        String srcPre = src.substring(0, src.lastIndexOf("/"));
+        String srcExt = src.substring(src.lastIndexOf(".")+1);
+        int num = Integer.parseInt(href.substring(href.lastIndexOf("/")+1, href.lastIndexOf(".")));
+        if (num > 0) {
+            for (int i = 1; i <= num; i++) {
+                String imageUrl = String.format("%s/%d.%s", srcPre, i, srcExt);
+                PhotoObject item = new PhotoObject();
+                item.setModule(module);
+                item.setGroupId(groupId);
+                item.setImageUrl(imageUrl);
+                item.setPosition(i);
+                results.add(item);
+            }
+        }
+        return results;
+    }
+
+    public String parseFuliImageUrl(String html) {
+        Document doc = Jsoup.parse(html);
+        return  doc.select("div.playpic img").first().attr("src");
     }
 }

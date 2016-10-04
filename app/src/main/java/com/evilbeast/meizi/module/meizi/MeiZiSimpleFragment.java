@@ -12,8 +12,9 @@ import com.evilbeast.meizi.R;
 import com.evilbeast.meizi.adapter.AbstractAdapter;
 import com.evilbeast.meizi.adapter.MeiZiAdapter;
 import com.evilbeast.meizi.base.RxBaseFragment;
-import com.evilbeast.meizi.entity.meizi.MeiZi;
-import com.evilbeast.meizi.entity.meizi.MeiZiGroup;
+import com.evilbeast.meizi.entity.photo.PhotoGroupObject;
+import com.evilbeast.meizi.entity.photo.PhotoObject;
+import com.evilbeast.meizi.module.common.PhotoViewActivity;
 import com.evilbeast.meizi.network.Api.MeiZiApi;
 import com.evilbeast.meizi.network.RetrofixHelper;
 import com.evilbeast.meizi.utils.MeiZiUtil;
@@ -34,6 +35,7 @@ import rx.schedulers.Schedulers;
 public class MeiZiSimpleFragment extends RxBaseFragment {
 
     public static final String EXTRA_TYPE = "extra_type";
+    public static final String MODULE_NAME = "meizi";
 
     // 获取Views
     @BindView(R.id.recycler)
@@ -44,7 +46,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
 
     private StaggeredGridLayoutManager mLayoutManager;
     private MeiZiAdapter mAdapter;
-    private List<MeiZi> mDataList;
+    private List<PhotoGroupObject> mDataList;
     private int page = 1;
     private String cateType;
     private int pageNum = 24;
@@ -68,8 +70,9 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         realm = Realm.getDefaultInstance();
 
         // 加载数据
-        mDataList = realm.where(MeiZi.class)
+        mDataList = realm.where(PhotoGroupObject.class)
                 .equalTo("type", cateType)
+                .equalTo("module", MODULE_NAME)
                 .findAll();
 
         // init RecyclerView
@@ -129,29 +132,36 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
     }
 
     private void fetchGroupDataAndOpen(final int groupId, final String groupTitle)  {
-        RetrofixHelper.createTextApi(MeiZiApi.class)
-                .getGroupImages(groupId)
-                .compose(this.<ResponseBody>bindToLifecycle())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ResponseBody>() {
-                    @Override
-                    public void call(ResponseBody responseBody) {
-                        try {
-                            List<MeiZiGroup> list = MeiZiUtil.getInstance().parseMeiZiGroupSave(responseBody.string(), groupId);
-                            MeiZiUtil.getInstance().putGroupCache(list);
-                            Intent intent = MeiziDetailActivity.newIntent(getActivity(), groupId, groupTitle);
-                            startActivity(intent);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+        long nums = realm.where(PhotoObject.class).equalTo("groupId", groupId).equalTo("module", MODULE_NAME).count();
+        if (nums > 0) {
+            Intent intent = PhotoViewActivity.newIntent(getActivity(), groupId, groupTitle, MODULE_NAME);
+            startActivity(intent);
+        } else {
+            RetrofixHelper.createTextApi(MeiZiApi.class)
+                    .getGroupImages(groupId)
+                    .compose(this.<ResponseBody>bindToLifecycle())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Action1<ResponseBody>() {
+                        @Override
+                        public void call(ResponseBody responseBody) {
+                            try {
+                                List<PhotoObject> list = MeiZiUtil.getInstance().parseMeiZiGroupSave(responseBody.string(), groupId, MODULE_NAME);
+                                MeiZiUtil.getInstance().putGroupCache(list);
+                                Intent intent = PhotoViewActivity.newIntent(getActivity(), groupId, groupTitle, MODULE_NAME);
+                                startActivity(intent);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
 
-                    }
-                });
+                        }
+                    });
+        }
+
     }
 
     private void fetchAndSaveData() {
@@ -165,7 +175,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
                     public void call(ResponseBody responseBody) {
                         try {
                             String html = responseBody.string();
-                            List<MeiZi> list = MeiZiUtil.getInstance().parserMeiziTuHtml(html, cateType);
+                            List<PhotoGroupObject> list = MeiZiUtil.getInstance().parserMeiziTuHtml(html, cateType, MODULE_NAME);
                             if (list.size() > 0) {
                                 MeiZiUtil.getInstance().putMeiZiCache(list);
                                 finishTask();
@@ -214,7 +224,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         mAdapter.setOnItemClickListener(new AbstractAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position, AbstractAdapter.ClickableViewHolder holder) {
-                fetchGroupDataAndOpen(mDataList.get(position).getGroupid(), mDataList.get(position).getTitle());
+                fetchGroupDataAndOpen(mDataList.get(position).getGroupId(), mDataList.get(position).getTitle());
             }
         });
     }
@@ -222,8 +232,9 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
 
     private void clearCache() {
         realm.beginTransaction();
-        realm.where(MeiZi.class)
+        realm.where(PhotoGroupObject.class)
                 .equalTo("type", cateType)
+                .equalTo("module", MODULE_NAME)
                 .findAll()
                 .deleteAllFromRealm();
         realm.commitTransaction();

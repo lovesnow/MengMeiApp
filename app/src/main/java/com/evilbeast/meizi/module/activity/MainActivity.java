@@ -5,11 +5,14 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.Settings;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 
 import com.evilbeast.meizi.R;
 import com.evilbeast.meizi.base.RxBaseActivity;
@@ -18,11 +21,16 @@ import com.evilbeast.meizi.module.meizi.MeiZiSimpleFragment;
 import com.evilbeast.meizi.module.zxfuli.FuliPageFragment;
 import com.evilbeast.meizi.utils.SnackbarUtil;
 
+import java.util.List;
+
 import butterknife.BindView;
 
-public class MainActivity extends RxBaseActivity {
+public class MainActivity extends RxBaseActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private long mUserExitTime;
+
+    private int currentIndex;
+    private Fragment[] fragmentList;
 
     // 绑定toolbar
     @BindView(R.id.toolbar)
@@ -38,6 +46,7 @@ public class MainActivity extends RxBaseActivity {
 
 
 
+
     @Override
     public int getLayoutId() {
         return R.layout.activity_main;
@@ -45,10 +54,24 @@ public class MainActivity extends RxBaseActivity {
 
     @Override
     public void initViews(Bundle savedInstanceState) {
-       // MeiZiPageFragment fragment = MeiZiPageFragment.newInstance();
-        FuliPageFragment fragment = FuliPageFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.content,fragment).commit();
+        initFragments();
+        initNavigationView();
 
+    }
+
+    private void initFragments() {
+        MeiZiPageFragment meizi_fragment_1 = MeiZiPageFragment.newInstance();
+        FuliPageFragment fuli_fragment_2 = FuliPageFragment.newInstance();
+        fragmentList = new Fragment[] {
+                meizi_fragment_1,
+                fuli_fragment_2,
+        };
+        getSupportFragmentManager().beginTransaction().replace(R.id.content, meizi_fragment_1).commit();
+        currentIndex = 0;
+    }
+
+    private void initNavigationView() {
+        mNavigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -60,6 +83,22 @@ public class MainActivity extends RxBaseActivity {
                 R.string.navigation_drawer_open,R.string.navigation_drawer_close);
         mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+    }
+
+    public void changeIndex(int index, String title) {
+        switchFragment(index);
+        mToolbar.setTitle(title);
+        mDrawerLayout.closeDrawers();
+    }
+
+    public void switchFragment(int index) {
+        FragmentTransaction trx = getSupportFragmentManager().beginTransaction();
+        trx.hide(fragmentList[currentIndex]);
+        if (!fragmentList[index].isAdded()) {
+            trx.add(R.id.content, fragmentList[index]);
+        }
+        trx.show(fragmentList[index]).commit();
+        currentIndex = index;
     }
 
     @Override
@@ -89,5 +128,21 @@ public class MainActivity extends RxBaseActivity {
         } else {
             finish();
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        item.setChecked(true);
+        switch (item.getItemId()) {
+            case R.id.nav_home:
+                changeIndex(0, getResources().getString(R.string.nav_home));
+                return true;
+            case R.id.nav_fuli:
+                changeIndex(1, getResources().getString(R.string.nav_fuli));
+                return true;
+            default:
+                break;
+        }
+        return true;
     }
 }

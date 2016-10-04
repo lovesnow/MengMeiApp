@@ -5,7 +5,21 @@
         <item
             android:id="@+id/nav_home"
             android:checkable="true"
-            android:title="首页"/>
+            android:checked="true"
+            android:icon="@drawable/home"
+            android:title="@string/nav_home" />
+
+        <item
+            android:id="@+id/nav_fuli"
+            android:checkable="true"
+            android:icon="@drawable/picture"
+            android:title="@string/nav_fuli" />
+
+        <item
+            android:id="@+id/nav_umei"
+            android:checkable="true"
+            android:icon="@drawable/bow_tie"
+            android:title="@string/nav_umei"/>
     </group>
 
 </menu>

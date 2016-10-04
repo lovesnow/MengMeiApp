@@ -13,4 +13,10 @@ public interface ZxFuliApi {
 
     @GET("type/20/{page}.html")
     Observable<ResponseBody> getImageData(@Path("page") int page);
+
+    @GET("tu/{groupId}.html")
+    Observable<ResponseBody> getGroupData(@Path("groupId") int groupId);
+
+    @GET("tu/{groupId}/{pos}.html")
+    Observable<ResponseBody> getGroupImageData(@Path("groupId") int groupId, @Path("pos") int pos);
 }

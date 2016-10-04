@@ -19,4 +19,7 @@ public interface MeiZiApi  {
 
     @GET("{groupId}")
     Observable<ResponseBody> getGroupImages(@Path("groupId") int groupId);
+
+    @GET("{groupId}/{pos}")
+    Observable<ResponseBody> getGroupImageData(@Path("groupId") int groupId, @Path("pos") int pos);
 }

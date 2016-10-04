@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.evilbeast.meizi.R;
-import com.evilbeast.meizi.entity.fuli.FuliItemObject;
+import com.evilbeast.meizi.entity.photo.PhotoGroupObject;
 import com.evilbeast.meizi.widget.RatioImageView;
 
 import java.util.ArrayList;
@@ -21,13 +21,13 @@ import java.util.List;
  */
 public class FuliAdapter extends AbstractAdapter {
 
-    private List<FuliItemObject> mDataList = new ArrayList<>();
+    private List<PhotoGroupObject> mDataList = new ArrayList<>();
     /**
      * 传入view,处理View的滚动监听事件
      *
      * @param view
      */
-    public FuliAdapter(RecyclerView view, List<FuliItemObject> data) {
+    public FuliAdapter(RecyclerView view, List<PhotoGroupObject> data) {
         super(view);
         mDataList = data;
     }

@@ -26,8 +26,8 @@ public class MeiZiPageFragment extends RxBaseFragment {
     ViewPager mViewPager;
 
     // titles and types
-    private List<String> titles = Arrays.asList("热门", "推荐", "清纯", "台湾", "日本", "性感");
-    private List<String> types = Arrays.asList("hot", "best", "mm", "taiwan", "japan", "xinggan");
+    private List<String> titles = Arrays.asList("最新","推荐", "热门", "清纯", "台湾", "日本", "性感");
+    private List<String> types = Arrays.asList("","best", "hot", "mm", "taiwan", "japan", "xinggan");
 
 
 

@@ -1,18 +1,19 @@
 package com.evilbeast.meizi.module.zxfuli;
 
+import android.content.Intent;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.view.View;
 
 import com.evilbeast.meizi.R;
 import com.evilbeast.meizi.adapter.AbstractAdapter;
 import com.evilbeast.meizi.adapter.FuliAdapter;
 import com.evilbeast.meizi.base.RxBaseFragment;
-import com.evilbeast.meizi.entity.fuli.FuliItemObject;
+import com.evilbeast.meizi.entity.photo.PhotoGroupObject;
+import com.evilbeast.meizi.entity.photo.PhotoObject;
+import com.evilbeast.meizi.module.common.PhotoViewActivity;
 import com.evilbeast.meizi.network.Api.ZxFuliApi;
 import com.evilbeast.meizi.network.RetrofixHelper;
-import com.evilbeast.meizi.utils.LogUtil;
 import com.evilbeast.meizi.utils.MeiZiUtil;
 
 import java.io.IOException;
@@ -25,13 +26,14 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-import static com.evilbeast.meizi.adapter.AbstractAdapter.*;
-
 /**
  * Author: sumary
  */
 public class FuliPageFragment extends RxBaseFragment {
-    private List<FuliItemObject> mDataList;
+
+    public static final String MODULE_NAME = "zxfuli";
+
+    private List<PhotoGroupObject> mDataList;
     private Realm realm;
 
     private FuliAdapter mAdapter;
@@ -59,7 +61,7 @@ public class FuliPageFragment extends RxBaseFragment {
     public void initViews() {
 
         realm = Realm.getDefaultInstance();
-        mDataList = realm.where(FuliItemObject.class).findAll();
+        mDataList = realm.where(PhotoGroupObject.class).equalTo("module", MODULE_NAME).findAll();
 
         initRecyclerView();
         initSwipeRefresh();
@@ -121,7 +123,7 @@ public class FuliPageFragment extends RxBaseFragment {
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                realm.where(FuliItemObject.class).findAll().deleteAllFromRealm();
+                realm.where(PhotoGroupObject.class).equalTo("module", MODULE_NAME).findAll().deleteAllFromRealm();
             }
         });
     }
@@ -138,7 +140,7 @@ public class FuliPageFragment extends RxBaseFragment {
                     public void call(ResponseBody responseBody) {
                         try {
                             String html = responseBody.string();
-                            List<FuliItemObject> list = MeiZiUtil.getInstance().parseFuliItems(html);
+                            List<PhotoGroupObject> list = MeiZiUtil.getInstance().parseFuliItems(html, MODULE_NAME);
                             MeiZiUtil.getInstance().putFuliItemCache(list);
                             boolean isEnd = list.size() <= 0;
                             finishTask(isEnd);
@@ -160,6 +162,36 @@ public class FuliPageFragment extends RxBaseFragment {
                 });
     }
 
+    private void fetchGroupDataAndOpen(final int groupId) {
+        long nums = realm.where(PhotoObject.class).equalTo("groupId", groupId).equalTo("module", MODULE_NAME).count();
+        if (nums > 0) {
+            Intent intent = PhotoViewActivity.newIntent(getActivity(), groupId, "", MODULE_NAME);
+            startActivity(intent);
+        } else {
+            RetrofixHelper.createTextApi(ZxFuliApi.class)
+                    .getGroupData(groupId)
+                    .compose(this.<ResponseBody>bindToLifecycle())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Action1<ResponseBody>() {
+                        @Override
+                        public void call(ResponseBody responseBody) {
+                            try {
+                                String html = responseBody.string();
+                                List<PhotoObject> list = MeiZiUtil.getInstance().parseFuliGroupHtml(html, groupId, MODULE_NAME);
+                                MeiZiUtil.getInstance().putGroupCache(list);
+                                Intent intent = PhotoViewActivity.newIntent(getActivity(), groupId, "", MODULE_NAME);
+                                startActivity(intent);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    });
+        }
+
+    }
+
     private void finishTask(boolean isEnd) {
         if ( mSwipeRefresh.isRefreshing()) {
             mSwipeRefresh.setRefreshing(false);
@@ -174,6 +206,13 @@ public class FuliPageFragment extends RxBaseFragment {
             } else {
                 mAdapter.notifyDataSetChanged();
             }
+
+            mAdapter.setOnItemClickListener(new AbstractAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(int position, AbstractAdapter.ClickableViewHolder holder) {
+                    fetchGroupDataAndOpen(mDataList.get(position).getGroupId());
+                }
+            });
         }
 
     }

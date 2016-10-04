@@ -26,9 +26,9 @@ public class MeiZiApp extends Application {
         //Realm.init(this);
         RealmConfiguration realmConfig = new RealmConfiguration
                 .Builder(this)
-                .name("meiziapp")
+                .name("meiziappv7")
                 .deleteRealmIfMigrationNeeded()
-                .schemaVersion(8)
+                .schemaVersion(9)
                 .build();
         Realm.setDefaultConfiguration(realmConfig);
     }

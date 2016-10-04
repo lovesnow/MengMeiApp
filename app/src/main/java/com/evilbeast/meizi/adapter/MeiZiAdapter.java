@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.evilbeast.meizi.R;
-import com.evilbeast.meizi.entity.meizi.MeiZi;
+import com.evilbeast.meizi.entity.photo.PhotoGroupObject;
 import com.evilbeast.meizi.widget.RatioImageView;
 
 import java.util.ArrayList;
@@ -22,9 +22,9 @@ import java.util.List;
  */
 public class MeiZiAdapter extends AbstractAdapter {
 
-    private List<MeiZi> mDataList = new ArrayList<MeiZi>();
+    private List<PhotoGroupObject> mDataList = new ArrayList<PhotoGroupObject>();
 
-    public MeiZiAdapter(RecyclerView view, List<MeiZi> dataList) {
+    public MeiZiAdapter(RecyclerView view, List<PhotoGroupObject> dataList) {
         super(view);
         mDataList = dataList;
     }
@@ -46,7 +46,7 @@ public class MeiZiAdapter extends AbstractAdapter {
             final MeiZiItemHolder itemHolder = (MeiZiItemHolder) holder;
             itemHolder.imageTitle.setText(mDataList.get(position).getTitle());
             Glide.with(getContext())
-                    .load(mDataList.get(position).getImageurl())
+                    .load(mDataList.get(position).getImageUrl())
                     .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .placeholder(R.drawable.placeholder_image)
@@ -61,8 +61,8 @@ public class MeiZiAdapter extends AbstractAdapter {
                     });
 
             // 共享元素切换效果的实现
-            itemHolder.imageView.setTag(R.string.app_name, mDataList.get(position).getImageurl());
-            ViewCompat.setTransitionName(itemHolder.imageView, mDataList.get(position).getImageurl());
+            itemHolder.imageView.setTag(R.string.app_name, mDataList.get(position).getImageUrl());
+            ViewCompat.setTransitionName(itemHolder.imageView, mDataList.get(position).getImageUrl());
 
         }
         super.onBindViewHolder(holder, position);
