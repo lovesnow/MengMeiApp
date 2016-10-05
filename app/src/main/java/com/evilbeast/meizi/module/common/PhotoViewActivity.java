@@ -14,7 +14,9 @@ import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,7 @@ import com.evilbeast.meizi.utils.GlideUtil;
 import com.evilbeast.meizi.utils.ImmersiveUtil;
 import com.evilbeast.meizi.utils.MeiZiUtil;
 import com.evilbeast.meizi.utils.StatusBarCompat;
+import com.evilbeast.meizi.widget.DepthTransFormes;
 import com.jakewharton.rxbinding.view.RxMenuItem;
 import com.tbruyelle.rxpermissions.RxPermissions;
 
@@ -102,9 +105,11 @@ public class PhotoViewActivity extends RxBaseActivity {
 
         mPagerAdapter = new PhotoPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mPagerAdapter);
+        //  页面翻页过渡效果
+        mViewPager.setPageTransformer(true, new DepthTransFormes());
+
         mPagerAdapter.notifyDataSetChanged();
-        // mViewPager.setPageTransformer();
-        // TODO: 2016/9/29 页面翻页过渡效果
+
 
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -135,7 +140,7 @@ public class PhotoViewActivity extends RxBaseActivity {
 
     public static Intent newIntent(Activity activity, int groupId, String groupTitle, String moduleName) {
         Intent intent = new Intent(activity, PhotoViewActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+     //   intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(EXTRA_GROUP_ID, groupId);
         intent.putExtra(EXTRA_GROUP_TITLE, groupTitle);
         intent.putExtra(EXTRA_MODULE_NAME, moduleName);
@@ -148,6 +153,8 @@ public class PhotoViewActivity extends RxBaseActivity {
         super.onDestroy();
         realm.close();
     }
+
+
 
     @Override
     public void initToolbar() {

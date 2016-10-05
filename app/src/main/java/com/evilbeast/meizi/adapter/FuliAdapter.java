@@ -51,6 +51,7 @@ public class FuliAdapter extends AbstractAdapter {
         Glide.with(getContext())
                 .load(mDataList.get(position).getImageUrl())
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .skipMemoryCache(true)
                 .centerCrop()
                 .placeholder(R.drawable.placeholder_image)
                 .into(viewHolder.itemImage)

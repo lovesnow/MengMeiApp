@@ -49,6 +49,7 @@ public class MeiZiAdapter extends AbstractAdapter {
                     .load(mDataList.get(position).getImageUrl())
                     .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .skipMemoryCache(true)
                     .placeholder(R.drawable.placeholder_image)
                     .into(itemHolder.imageView)
                     .getSize(new SizeReadyCallback() {

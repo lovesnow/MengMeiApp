@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import com.evilbeast.meizi.R;
 import com.evilbeast.meizi.adapter.AbstractAdapter;
@@ -157,6 +158,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
+                            Toast.makeText(getContext(), "获取图片出错", Toast.LENGTH_SHORT).show();
 
                         }
                     });
@@ -282,6 +284,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         super.onDestroy();
         realm.close();
     }
+
 
     // 通类型参数生成实例
     public static MeiZiSimpleFragment newInstance(String type) {

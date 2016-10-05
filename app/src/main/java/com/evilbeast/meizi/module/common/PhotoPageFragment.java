@@ -2,6 +2,7 @@ package com.evilbeast.meizi.module.common;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -103,6 +104,7 @@ public class PhotoPageFragment extends RxBaseFragment implements RequestListener
     private void glideLoadImageUrl(String url) {
        Glide.with(this).load(url)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .skipMemoryCache(true)
                 .crossFade(0)
                 .listener(this)
                 .into(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
@@ -214,6 +216,8 @@ public class PhotoPageFragment extends RxBaseFragment implements RequestListener
         super.onDestroy();
         mRealm.close();
     }
+
+
 
     public static PhotoPageFragment newInstance(int id) {
         Bundle bundle = new Bundle();

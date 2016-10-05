@@ -14,12 +14,6 @@
             android:checkable="true"
             android:icon="@drawable/picture"
             android:title="@string/nav_fuli" />
-
-        <item
-            android:id="@+id/nav_umei"
-            android:checkable="true"
-            android:icon="@drawable/bow_tie"
-            android:title="@string/nav_umei"/>
     </group>
 
 </menu>
