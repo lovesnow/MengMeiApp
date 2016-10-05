@@ -1,5 +1,7 @@
 package com.evilbeast.meizi.module.common;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -207,6 +209,28 @@ public class PhotoPageFragment extends RxBaseFragment implements RequestListener
             @Override
             public void onViewTap(View view, float v, float v1) {
                 RxBus.getInstance().post("toggleToolBar");
+            }
+        });
+
+        mPhotoViewAttacher.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                new AlertDialog.Builder(getActivity())
+                        .setMessage("是否保存到本地")
+                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        })
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                RxBus.getInstance().post(mData.getImageUrl());
+                                dialog.dismiss();
+                            }
+                        }).show();
+                return true;
             }
         });
     }

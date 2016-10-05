@@ -13,6 +13,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
@@ -133,7 +134,11 @@ public class PhotoViewActivity extends RxBaseActivity {
                 .subscribe(new Action1<String>() {
                     @Override
                     public void call(String s) {
-                        toggleToolbar();
+                        if (s.equals("toggleToolBar")) {
+                            toggleToolbar();
+                        } else if (s.startsWith("http")) {
+                            saveImage(s);
+                        }
                     }
                 });
     }
@@ -182,9 +187,9 @@ public class PhotoViewActivity extends RxBaseActivity {
 
     }
 
-    private void connectSaveImageEvent() {
-        RxMenuItem.clicks(mToolbar.getMenu().findItem(R.id.action_save_image))
-                .compose(this.<Void>bindToLifecycle())
+    private void saveImage(final String url) {
+        Observable.just(url)
+                .compose(this.<String>bindToLifecycle())
                 .compose(RxPermissions.getInstance(PhotoViewActivity.this).ensure(Manifest.permission.WRITE_EXTERNAL_STORAGE))
                 .observeOn(Schedulers.io())
                 .filter(new Func1<Boolean, Boolean>() {
@@ -196,7 +201,7 @@ public class PhotoViewActivity extends RxBaseActivity {
                 .flatMap(new Func1<Boolean, Observable<Uri>>() {
                     @Override
                     public Observable<Uri> call(Boolean aBoolean) {
-                        return GlideUtil.saveImageToLocal(PhotoViewActivity.this, currentImageUrl);
+                        return GlideUtil.saveImageToLocal(PhotoViewActivity.this, url);
                     }
                 })
                 .map(new Func1<Uri, String>() {
@@ -220,6 +225,19 @@ public class PhotoViewActivity extends RxBaseActivity {
                         Toast.makeText(PhotoViewActivity.this, "保存失败,请重试", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void connectSaveImageEvent() {
+        mToolbar.getMenu().findItem(R.id.action_save_image).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                saveImage(currentImageUrl);
+                return  true;
+            }
+        });
+
+        //RxMenuItem.clicks().
+
     }
 
     protected void toggleToolbar() {
