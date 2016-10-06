@@ -66,6 +66,8 @@ public class FuliPageFragment extends RxBaseFragment {
         initRecyclerView();
         initSwipeRefresh();
 
+        setItemClickListener();
+
     }
 
     private void initRecyclerView() {
@@ -103,19 +105,21 @@ public class FuliPageFragment extends RxBaseFragment {
             }
         });
 
-        mSwipeRefresh.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mSwipeRefresh.setRefreshing(true);
-                pullRefresh();
-            }
-        }, 500);
+        if (mDataList.size() <= 0) {
+            mSwipeRefresh.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mSwipeRefresh.setRefreshing(true);
+                    pullRefresh();
+                }
+            }, 500);
+        }
     }
 
     private void pullRefresh() {
         page = 1;
         hasLoadMore = true;
-        clearData();
+//        clearData();
         fetchData();
     }
 
@@ -141,6 +145,10 @@ public class FuliPageFragment extends RxBaseFragment {
                         try {
                             String html = responseBody.string();
                             List<PhotoGroupObject> list = MeiZiUtil.getInstance().parseFuliItems(html, MODULE_NAME);
+
+                            if (page == 1) {
+                                clearData();
+                            }
                             MeiZiUtil.getInstance().putFuliItemCache(list);
                             boolean isEnd = list.size() <= 0;
                             finishTask(isEnd);
@@ -207,14 +215,19 @@ public class FuliPageFragment extends RxBaseFragment {
                 mAdapter.notifyDataSetChanged();
             }
 
-            mAdapter.setOnItemClickListener(new AbstractAdapter.OnItemClickListener() {
-                @Override
-                public void onItemClick(int position, AbstractAdapter.ClickableViewHolder holder) {
-                    fetchGroupDataAndOpen(mDataList.get(position).getGroupId());
-                }
-            });
+           // setItemClickListener();
+
         }
 
+    }
+
+    private void setItemClickListener() {
+        mAdapter.setOnItemClickListener(new AbstractAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position, AbstractAdapter.ClickableViewHolder holder) {
+                fetchGroupDataAndOpen(mDataList.get(position).getGroupId());
+            }
+        });
     }
 
     @Override

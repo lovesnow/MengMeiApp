@@ -45,6 +45,10 @@ public class FuliAdapter extends AbstractAdapter {
 
     @Override
     public void onBindViewHolder(ClickableViewHolder holder, int position) {
+        if (!mDataList.get(position).isValid()) {
+            super.onBindViewHolder(holder, position);
+            return;
+        }
         final FuliViewHolder viewHolder = (FuliViewHolder) holder;
 
         viewHolder.itemTitle.setText(mDataList.get(position).getTitle());

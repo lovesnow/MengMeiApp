@@ -7,9 +7,11 @@ import android.support.v4.view.ViewPager;
 
 import com.evilbeast.meizi.R;
 import com.evilbeast.meizi.base.RxBaseFragment;
+import com.evilbeast.meizi.utils.LogUtil;
 import com.flyco.tablayout.SlidingTabLayout;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -48,6 +50,7 @@ public class MeiZiPageFragment extends RxBaseFragment {
     }
 
     private class MeiZiPageAdapter extends FragmentStatePagerAdapter {
+        private HashMap<Integer, MeiZiSimpleFragment> fragments = new HashMap<>();
 
         public MeiZiPageAdapter(FragmentManager fm) {
             super(fm);
@@ -55,7 +58,12 @@ public class MeiZiPageFragment extends RxBaseFragment {
 
         @Override
         public Fragment getItem(int position) {
-            return MeiZiSimpleFragment.newInstance(types.get(position));
+            if (fragments.containsKey(position)) {
+                return fragments.get(position);
+            }
+            MeiZiSimpleFragment fragment = MeiZiSimpleFragment.newInstance(types.get(position));
+            fragments.put(position, fragment);
+            return fragment;
         }
 
         @Override

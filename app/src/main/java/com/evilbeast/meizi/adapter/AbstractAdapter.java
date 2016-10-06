@@ -42,7 +42,7 @@ public abstract class AbstractAdapter extends RecyclerView.Adapter<AbstractAdapt
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                for (RecyclerView.OnScrollListener listener: mListeners) {
+                for (RecyclerView.OnScrollListener listener: mListeners) { 
                     listener.onScrolled(recyclerView, dx, dy);
                 }
             }

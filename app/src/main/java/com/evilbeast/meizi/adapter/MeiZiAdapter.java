@@ -43,27 +43,30 @@ public class MeiZiAdapter extends AbstractAdapter {
     @Override
     public void onBindViewHolder(ClickableViewHolder holder, int position) {
         if (holder instanceof MeiZiItemHolder) {
-            final MeiZiItemHolder itemHolder = (MeiZiItemHolder) holder;
-            itemHolder.imageTitle.setText(mDataList.get(position).getTitle());
-            Glide.with(getContext())
-                    .load(mDataList.get(position).getImageUrl())
-                    .centerCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .skipMemoryCache(true)
-                    .placeholder(R.drawable.placeholder_image)
-                    .into(itemHolder.imageView)
-                    .getSize(new SizeReadyCallback() {
-                        @Override
-                        public void onSizeReady(int width, int height) {
-                            if (!itemHolder.item.isShown()) {
-                                itemHolder.item.setVisibility(View.VISIBLE);
+            if (mDataList.get(position).isValid()) {
+                final MeiZiItemHolder itemHolder = (MeiZiItemHolder) holder;
+                itemHolder.imageTitle.setText(mDataList.get(position).getTitle());
+                Glide.with(getContext())
+                        .load(mDataList.get(position).getImageUrl())
+                        .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .skipMemoryCache(true)
+                        .placeholder(R.drawable.placeholder_image)
+                        .into(itemHolder.imageView)
+                        .getSize(new SizeReadyCallback() {
+                            @Override
+                            public void onSizeReady(int width, int height) {
+                                if (!itemHolder.item.isShown()) {
+                                    itemHolder.item.setVisibility(View.VISIBLE);
+                                }
                             }
-                        }
-                    });
+                        });
 
-            // 共享元素切换效果的实现
-            itemHolder.imageView.setTag(R.string.app_name, mDataList.get(position).getImageUrl());
-            ViewCompat.setTransitionName(itemHolder.imageView, mDataList.get(position).getImageUrl());
+                // 共享元素切换效果的实现
+               // itemHolder.imageView.setTag(R.string.app_name, mDataList.get(position).getImageUrl());
+               // ViewCompat.setTransitionName(itemHolder.imageView, mDataList.get(position).getImageUrl());
+            }
+
 
         }
         super.onBindViewHolder(holder, position);

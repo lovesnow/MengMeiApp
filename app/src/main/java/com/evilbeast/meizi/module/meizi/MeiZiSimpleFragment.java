@@ -18,6 +18,7 @@ import com.evilbeast.meizi.entity.photo.PhotoObject;
 import com.evilbeast.meizi.module.common.PhotoViewActivity;
 import com.evilbeast.meizi.network.Api.MeiZiApi;
 import com.evilbeast.meizi.network.RetrofixHelper;
+import com.evilbeast.meizi.utils.LogUtil;
 import com.evilbeast.meizi.utils.MeiZiUtil;
 
 import java.io.IOException;
@@ -63,10 +64,6 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
 
     @Override
     public void initViews() {
-
-        // init Swipe refresh
-        initSwipeRefresh();
-
         cateType = getArguments().getString(EXTRA_TYPE);
         realm = Realm.getDefaultInstance();
 
@@ -79,8 +76,11 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         // init RecyclerView
         initRecyclerView();
 
-        // TODO: 2016/9/28 Tab
+        // init Swipe refresh
+        initSwipeRefresh();
 
+        // set item listener
+        setItemClickListener();
 
     }
 
@@ -107,17 +107,19 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                pull_refresh_data();
+               pull_refresh_data();
             }
         });
 
         // 首次打开的时候加载数据
-        mSwipeRefreshLayout.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                pull_refresh_data();
-            }
-        }, 500);
+        if (mDataList.size() <= 0) {
+            mSwipeRefreshLayout.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    pull_refresh_data();
+                }
+            }, 500);
+        }
     }
 
     private void pull_refresh_data() {
@@ -128,7 +130,6 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
         } else {
             hasLoadMore = true;
         }
-        clearCache();
         fetchAndSaveData();
     }
 
@@ -179,6 +180,12 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
                             String html = responseBody.string();
                             List<PhotoGroupObject> list = MeiZiUtil.getInstance().parserMeiziTuHtml(html, cateType, MODULE_NAME);
                             if (list.size() > 0) {
+
+                                // 如果获取的是首页的数据，先清空再存储
+                                if (page == 1) {
+                                    clearCache();
+                                }
+
                                 MeiZiUtil.getInstance().putMeiZiCache(list);
                                 finishTask();
                             } else {
@@ -222,7 +229,9 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
             mSwipeRefreshLayout.setRefreshing(false);
         }
 
-        // TODO: 2016/9/28 设置itemclickListener
+    }
+
+    private void setItemClickListener() {
         mAdapter.setOnItemClickListener(new AbstractAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position, AbstractAdapter.ClickableViewHolder holder) {
@@ -230,7 +239,6 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
             }
         });
     }
-
 
     private void clearCache() {
         realm.beginTransaction();
@@ -240,6 +248,7 @@ public class MeiZiSimpleFragment extends RxBaseFragment {
                 .findAll()
                 .deleteAllFromRealm();
         realm.commitTransaction();
+        //mAdapter.notifyDataSetChanged();
     }
 
     RecyclerView.OnScrollListener OnLoadMoreListener (StaggeredGridLayoutManager layoutManager) {
